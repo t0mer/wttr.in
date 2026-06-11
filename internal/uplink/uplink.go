@@ -25,22 +25,35 @@ type UplinkProcessor struct {
 }
 
 func NewUplinkProcessor(cfg *Config) *UplinkProcessor {
+	// No uplink configured — all requests will be handled locally.
+	if cfg.Address1 == "" && cfg.Address2 == "" && cfg.Address3 == "" && cfg.Address4 == "" {
+		return &UplinkProcessor{}
+	}
+
+	timeout := cfg.Timeout
+	if timeout <= 0 {
+		timeout = 15
+	}
+
 	dialer := &net.Dialer{
-		Timeout:   time.Duration(cfg.Timeout) * time.Second,
-		KeepAlive: time.Duration(cfg.Timeout) * time.Second,
+		Timeout:   time.Duration(timeout) * time.Second,
+		KeepAlive: time.Duration(timeout) * time.Second,
 		DualStack: true,
 	}
 
 	mkClient := func(addr string) *http.Client {
+		if addr == "" {
+			return nil
+		}
 		return &http.Client{
 			Transport: &http.Transport{
 				DialContext: func(ctx context.Context, network, _ string) (net.Conn, error) {
 					return dialer.DialContext(ctx, network, addr)
 				},
-				MaxIdleConnsPerHost: 32, // tune this!
+				MaxIdleConnsPerHost: 32,
 				IdleConnTimeout:     90 * time.Second,
 			},
-			Timeout: 15 * time.Second, // safety net
+			Timeout: 15 * time.Second,
 		}
 	}
 
@@ -55,38 +68,27 @@ func NewUplinkProcessor(cfg *Config) *UplinkProcessor {
 func (p *UplinkProcessor) Route(
 	opts *options.Options, r *http.Request, ipData *domain.IPData, location *domain.Location,
 ) (bool, *domain.CacheEntry, error) {
-	var (
-		uplinkRoute    bool = true
-		uplinkResponse *domain.CacheEntry
-		err            error
-		client         *http.Client
-	)
-
-	//////////////////////////////////////////
-	// Views that are not processed by the uplink.
-	// if !checkURLForPNG(r) {
+	// Views handled locally — skip uplink entirely.
 	if util.InSlice(opts.View, []string{"line", "j1", "j2", "p1", "v1", "v2", "v2d", "v2n", "files", "page", "subprocess"}) {
 		return false, nil, nil
 	}
-	// }
 
+	var client *http.Client
 	if checkURLForPNG(r) {
 		client = p.client4
-		// } else if opts.View == "v1" || opts.View == "files" {
-		// 	client = p.client3
 	} else if opts.View == "v2" || opts.View == "p1" {
 		client = p.client2
 	} else {
-		// The rest goes to the client1 (should be empty).
 		client = p.client1
 	}
-	//////////////////////////////////////////
 
-	if uplinkRoute {
-		uplinkResponse, err = getUplink(r, client, location, opts)
+	// No client means this uplink address is unconfigured — handle locally.
+	if client == nil {
+		return false, nil, nil
 	}
 
-	return uplinkRoute, uplinkResponse, err
+	uplinkResponse, err := getUplink(r, client, location, opts)
+	return true, uplinkResponse, err
 }
 
 // getUplink forwards the incoming request to one of the backend uplink servers
