@@ -6,10 +6,10 @@ on:
       version:
         description: "Version (leave blank to auto-compute YYYY.M.PATCH)"
         required: false
-  workflow_run:
-    workflows: [CI]
-    branches: [master]
-    types: [completed]
+  # workflow_run:
+  #   workflows: [CI]
+  #   branches: [master]
+  #   types: [completed]
 
 jobs:
   docker:
