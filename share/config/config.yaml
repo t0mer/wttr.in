@@ -32,9 +32,27 @@ geo:
           token: "TOKEN"
 
 weather:
+  # provider selects the weather data source.
+  # Options: wwo | open_meteo | owm | weatherapi
+  # Default (when omitted): uses wwo if a wwo block is present, otherwise open_meteo.
+  # provider: open_meteo
+
+  # Open-Meteo — free, no API key required.
+  # open_meteo:
+  #   baseUrl: https://api.open-meteo.com/v1/forecast  # optional override
+
+  # OpenWeatherMap — free tier available; API key required.
+  # owm:
+  #   apiKey: "YOUR_OWM_API_KEY"
+
+  # WeatherAPI.com — free tier available; API key required.
+  # weatherapi:
+  #   apiKey: "YOUR_WEATHERAPI_KEY"
+
+  # WorldWeatherOnline-compatible (original backend, kept for backwards compatibility).
   wwo:
     baseUrl: "http://wttr.in/{lat},{lon}?format=j1&lang={lang}"
-    # token: "TOKEN"
+    # key: "TOKEN"
 
 logging:
     accessLog: log/access.log
