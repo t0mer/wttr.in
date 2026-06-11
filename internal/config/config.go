@@ -45,22 +45,50 @@ type Config struct {
 
 // LoadFromYAML loads configuration from a YAML file and returns a pointer to Config
 func LoadFromYAML(filePath string) (*Config, error) {
-	// Read the YAML file
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("error reading YAML file: %v", err)
 	}
 
-	// Create a new Config instance
 	config := &Config{}
 
-	// Unmarshal YAML data into the Config struct with strict checking for unknown fields
 	err = yaml.UnmarshalStrict(data, config)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshaling YAML: %v", err)
 	}
 
+	config.applyDefaults()
+
 	return config, nil
+}
+
+// applyDefaults initialises any nil sub-config to a zero-value struct so
+// callers can access nested fields without nil checks.
+func (c *Config) applyDefaults() {
+	if c.Geo == nil {
+		c.Geo = &location.Config{}
+	}
+	if c.IP == nil {
+		c.IP = &ip.Config{}
+	}
+	if c.Weather == nil {
+		c.Weather = &weather.Config{}
+	}
+	if c.Cache == nil {
+		c.Cache = &cache.Config{}
+	}
+	if c.Logging == nil {
+		c.Logging = &logging.Config{}
+	}
+	if c.Uplink == nil {
+		c.Uplink = &uplink.Config{}
+	}
+	if c.Server == nil {
+		c.Server = &server.Config{}
+	}
+	if c.Renderer == nil {
+		c.Renderer = &renderer.Config{}
+	}
 }
 
 func (c *Config) MarshalYAML() ([]byte, error) {
