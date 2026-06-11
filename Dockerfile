@@ -57,4 +57,4 @@ USER wttr
 
 EXPOSE 8002
 
-CMD ["/app/bin/srv"]
+CMD ["/app/bin/srv", "srv", "/app/config/config.yaml"]
