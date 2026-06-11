@@ -1,0 +1,20 @@
+services:
+  wttr:
+    image: techblog/wttr.in:latest
+    command: ["/app/bin/srv", "srv", "/app/config/config.yaml"]
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config:/app/config                        # config.yaml lives here
+      - wttr-cache:/var/cache/wttr.in               # weather disk cache
+      - wttr-geocache:/app/cache                    # IP / location SQLite DBs
+      - wttr-logs:/app/log                          # access + error logs
+      - ./data/GeoLite2-City.mmdb:/app/data/GeoLite2-City.mmdb:ro  # MaxMind DB
+    environment:
+      WTTR_MYDIR: /app
+    restart: unless-stopped
+
+volumes:
+  wttr-cache:
+  wttr-geocache:
+  wttr-logs:
