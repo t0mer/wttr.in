@@ -11,7 +11,7 @@ intended to demonstrate the power of the console-oriented services,
 
 You can see it running here: [wttr.in](https://wttr.in).
 
-[Documentation](https://wttr.in/:help) | [Usage](https://github.com/chubin/wttr.in#usage) | [One-line output](https://github.com/chubin/wttr.in#one-line-output) | [Data-rich output format](https://github.com/chubin/wttr.in#data-rich-output-format-v2) | [Map view](https://github.com/chubin/wttr.in#map-view-v3) | [Output formats](https://github.com/chubin/wttr.in#different-output-formats) | [Moon phases](https://github.com/chubin/wttr.in#moon-phases) | [Internationalization](https://github.com/chubin/wttr.in#internationalization-and-localization) | [Installation](https://github.com/chubin/wttr.in#installation)
+[Documentation](https://wttr.in/:help) | [Usage](https://github.com/chubin/wttr.in#usage) | [One-line output](https://github.com/chubin/wttr.in#one-line-output) | [Data-rich output format](https://github.com/chubin/wttr.in#data-rich-output-format-v2) | [Map view](https://github.com/chubin/wttr.in#map-view-v3) | [Output formats](https://github.com/chubin/wttr.in#different-output-formats) | [Moon phases](https://github.com/chubin/wttr.in#moon-phases) | [Internationalization](https://github.com/chubin/wttr.in#internationalization-and-localization) | [Installation](https://github.com/chubin/wttr.in#installation) | [Weather Providers](https://github.com/chubin/wttr.in#weather-providers)
 
 ## Usage
 
@@ -736,9 +736,9 @@ geo:
       token: "YOUR_OPENCAGE_TOKEN_HERE"
 
 weather:
-  wwo:
-    baseUrl: "http://wttr.in/{lat},{lon}?format=j1&lang={lang}"
-    # key: "YOUR_WWO_TOKEN"   # optional
+  # Choose one of: open_meteo | owm | weatherapi | wwo
+  # open_meteo requires no API key and is the recommended default.
+  provider: open_meteo
 
 server:
   portHttp: 8080
@@ -747,8 +747,70 @@ server:
   # tlsKeyFile: /wttr.in/etc/privkey.pem
 ```
 
-The configuration implies the use of OpenCage for geolocation (a token is required) and wttr.in as the source of weather data.
-If you want to use *WorldWeatherOnline*, you must register there to obtain a token and set the `baseUrl` accordingly.
+The configuration uses OpenCage for geolocation (a token is required) and Open-Meteo for weather data (no key needed).
+See the [Weather Providers](#weather-providers) section below for other provider options.
+
+### Weather Providers
+
+wttr.in supports four weather data backends. Set `weather.provider` in your `config.yaml` to select one.
+
+#### Open-Meteo (default — free, no API key)
+
+[Open-Meteo](https://open-meteo.com/) is a free, open-source weather API with no registration required. It is the recommended default for self-hosted instances.
+
+```yaml
+weather:
+  provider: open_meteo
+  # open_meteo:
+  #   baseUrl: https://api.open-meteo.com/v1/forecast  # optional override
+```
+
+#### OpenWeatherMap
+
+[OpenWeatherMap](https://openweathermap.org/) has a free tier (1,000 calls/day) and requires an API key.
+
+```yaml
+weather:
+  provider: owm
+  owm:
+    apiKey: "YOUR_OWM_API_KEY"
+```
+
+Sign up and get a free key at [openweathermap.org/api](https://openweathermap.org/api).
+
+#### WeatherAPI
+
+[WeatherAPI.com](https://www.weatherapi.com/) has a free tier (1,000,000 calls/month) and requires an API key. Includes moon phase and astronomy data.
+
+```yaml
+weather:
+  provider: weatherapi
+  weatherapi:
+    apiKey: "YOUR_WEATHERAPI_KEY"
+```
+
+Sign up and get a free key at [weatherapi.com](https://www.weatherapi.com/).
+
+#### WorldWeatherOnline-compatible (legacy)
+
+For compatibility with the original wttr.in backend or a WWO-compatible proxy, use the `wwo` provider. A `baseUrl` with `{lat}`, `{lon}`, and `{lang}` placeholders is required.
+
+```yaml
+weather:
+  provider: wwo   # can be omitted if only wwo block is present
+  wwo:
+    baseUrl: "http://wttr.in/{lat},{lon}?format=j1&lang={lang}"
+    # key: "YOUR_WWO_TOKEN"
+```
+
+**Provider comparison**
+
+| Provider | Free tier | API key | Hourly | Moon phase |
+|---|---|---|---|---|
+| Open-Meteo | Unlimited | None | Yes | No |
+| OpenWeatherMap | 1,000 calls/day | Required | Yes (3 h) | No |
+| WeatherAPI | 1M calls/month | Required | Yes (1 h→3 h) | Yes |
+| WWO-compatible | Varies | Optional | Yes | No |
 
 
 ### Running the Service
