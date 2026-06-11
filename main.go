@@ -156,7 +156,7 @@ func srv(configFile string) error {
 	}
 
 	// 3. Create cached weather client
-	rawClient := weather.NewWeatherClient(cfg.Weather.WWO)
+	rawClient := newWeatherer(cfg.Weather)
 
 	cachedWeatherClient := weather.NewCachedWeatherClient(
 		rawClient,
@@ -228,5 +228,29 @@ func main() {
 	default:
 		logrus.Error("Invalid command. Usage: CMD {gen|srv}")
 		os.Exit(1)
+	}
+}
+
+// newWeatherer selects and constructs the weather backend from config.
+func newWeatherer(cfg *weather.Config) weather.Weatherer {
+	switch cfg.Provider {
+	case "open_meteo", "openmeteo":
+		return weather.NewOpenMeteoClient(cfg.OpenMeteo)
+	case "owm", "openweathermap":
+		if cfg.OWM == nil {
+			log.Fatalln("weather provider 'owm' requires a weather.owm config block with an apiKey")
+		}
+		return weather.NewOWMClient(cfg.OWM)
+	case "weatherapi":
+		if cfg.WeatherAPI == nil {
+			log.Fatalln("weather provider 'weatherapi' requires a weather.weatherapi config block with an apiKey")
+		}
+		return weather.NewWeatherAPIClient(cfg.WeatherAPI)
+	default:
+		// Backwards-compat: if a wwo block is present use it; otherwise fall back to Open-Meteo.
+		if cfg.WWO != nil && cfg.WWO.BaseURL != "" {
+			return weather.NewWeatherClient(cfg.WWO)
+		}
+		return weather.NewOpenMeteoClient(cfg.OpenMeteo)
 	}
 }

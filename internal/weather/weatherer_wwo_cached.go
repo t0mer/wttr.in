@@ -26,17 +26,17 @@ func MakeWeatherCacheKey(lat, lon float64, lang string) string {
 	return fmt.Sprintf("weather:wwo:%.4f:%.4f:%s", lat, lon, lang)
 }
 
-// CachedWeatherClient wraps the original WeatherClient with disk/memory caching
+// CachedWeatherClient wraps any Weatherer with disk/memory caching
 // and request coalescing.
 type CachedWeatherClient struct {
-	client     *WeatherClient
+	client     Weatherer
 	cacher     Cacher
 	defaultTTL time.Duration
 }
 
-// NewCachedWeatherClient creates a new caching wrapper around a WeatherClient.
+// NewCachedWeatherClient creates a new caching wrapper around any Weatherer.
 func NewCachedWeatherClient(
-	client *WeatherClient,
+	client Weatherer,
 	cacher Cacher,
 	defaultTTL time.Duration,
 ) *CachedWeatherClient {
@@ -115,10 +115,10 @@ func (c *CachedWeatherClient) waitForInProgress(key string) ([]byte, error) {
 	return entry.Body, nil
 }
 
-// Close closes both the underlying client and the cache.
+// Close closes the underlying client (if it supports it) and the cache.
 func (c *CachedWeatherClient) Close() error {
-	if c.client != nil {
-		c.client.Close()
+	if closer, ok := c.client.(interface{ Close() }); ok {
+		closer.Close()
 	}
 	if c.cacher != nil {
 		return c.cacher.Close()
