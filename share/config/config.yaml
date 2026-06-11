@@ -19,7 +19,7 @@ ip:
     ipCache: cache/ip2l
     ipCacheDb: /wttr.in/cache/geoip.db
     ipCacheType: db
-    geoip2: /wttr.in/wttr.in-v2-v2/data/GeoLite2-City-20260310.mmdb
+    geoip2: /app/data/GeoLite2-City.mmdb
 
 geo:
     locationCache: cache/loc
