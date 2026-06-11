@@ -32,15 +32,17 @@ COPY . .
 RUN bash build.sh build
 
 # ========================
-# Runtime stage (keep Alpine for small final image)
+# Runtime stage (Debian to match builder glibc)
 # ========================
-FROM alpine:3.23
+FROM debian:bookworm-slim
 
 WORKDIR /app
 
 # Minimal runtime dependencies
-RUN apk add --no-cache ca-certificates curl && \
-    adduser -D -u 1000 wttr && \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    useradd -r -u 1000 -m wttr && \
     mkdir -p /app/cache /app/data /app/log && \
     chown -R wttr:wttr /app
 
