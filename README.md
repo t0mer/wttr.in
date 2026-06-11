@@ -611,6 +611,37 @@ in your language.
 
 ## Installation
 
+### Docker (recommended)
+
+The easiest way to run your own wttr.in instance is with Docker Compose.
+
+**1. Create a `config` directory and place your `config.yaml` inside it** (see the [Configuration](#configuration) section below for a full example).
+
+**2. Start the service:**
+
+```bash
+docker compose up -d
+```
+
+That's it. On first start the container automatically downloads the **GeoLite2-City** database from a public mirror — no MaxMind account or license key required.  
+The database is stored in a named Docker volume (`wttr-data`) and reused on every subsequent restart.
+
+The service is available at `http://your-server:8080`.
+
+#### Volumes
+
+| Volume | Purpose |
+|---|---|
+| `./config` | Your `config.yaml` (bind-mounted) |
+| `wttr-data` | GeoLite2-City.mmdb (auto-downloaded on first start) |
+| `wttr-cache` | Weather disk cache |
+| `wttr-geocache` | IP / location SQLite databases |
+| `wttr-logs` | Access and error logs |
+
+---
+
+### From source
+
 This guide explains how to install wttr.in from the source code.
 
 It is implemented as a *single static binary* with all assets (including fonts for PNG rendering) embedded inside.
@@ -638,10 +669,13 @@ sudo chown -R wttr:wttr /wttr.in
 
 ### Download GeoIP2 Database
 
-For automated IPs resolution:
+For automated IP resolution, you need the **GeoLite2-City.mmdb** database.
+You can download it directly from the public mirror — no account required:
 
-- Register at [MaxMind](https://www.maxmind.com) and download **GeoLite2-City.mmdb**.
-- Place it at: `/wttr.in/data/GeoLite2-City.mmdb`
+```bash
+curl -fsSL https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-City.mmdb \
+  -o /wttr.in/data/GeoLite2-City.mmdb
+```
 
 ### Build the Binary
 
