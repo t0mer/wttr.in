@@ -799,8 +799,8 @@ For compatibility with the original wttr.in backend or a WWO-compatible proxy, u
 weather:
   provider: wwo   # can be omitted if only wwo block is present
   wwo:
-    baseUrl: "http://wttr.in/{lat},{lon}?format=j1&lang={lang}"
-    # key: "YOUR_WWO_TOKEN"
+    baseUrl: "https://api.worldweatheronline.com/premium/v1/weather.ashx?key={key}&q={lat},{lon}&format=json&num_of_days=3&fx=yes&cc=yes&hourly=1&tp=3&mca=no&includelocation=yes&lang={lang}"
+    key: "YOUR_WWO_API_KEY"
 ```
 
 **Provider comparison**
