@@ -37,17 +37,16 @@ func NewWeatherClient(cfg *WWOConfig) *WeatherClient {
 	if cfg.BaseURL == "" {
 		panic("empty baseURL in weather config")
 	}
-	if cfg.Key == "" {
-		panic("missing/empty API key in weather config")
-	}
-
 	maxConns := cfg.MaxConns
 	if maxConns < 1 {
 		maxConns = 100 // reasonable default
 	}
 
-	// Replace API key once during initialization
-	baseURL := strings.ReplaceAll(cfg.BaseURL, "{key}", cfg.Key)
+	// Replace API key placeholder if the URL uses it and a key is provided.
+	baseURL := cfg.BaseURL
+	if cfg.Key != "" {
+		baseURL = strings.ReplaceAll(baseURL, "{key}", cfg.Key)
+	}
 
 	// Configure HTTP transport for connection reuse and pooling
 	transport := &http.Transport{
