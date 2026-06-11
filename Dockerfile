@@ -39,22 +39,23 @@ FROM alpine:3.23
 WORKDIR /app
 
 # Minimal runtime dependencies
-RUN apk add --no-cache ca-certificates && \
+RUN apk add --no-cache ca-certificates curl && \
     adduser -D -u 1000 wttr && \
-    mkdir -p /app/cache && \
+    mkdir -p /app/cache /app/data /app/log && \
     chown -R wttr:wttr /app
 
-# Copy the built binary
+# Copy the built binary and entrypoint
 COPY --from=builder /app/srv /app/bin/srv
+COPY scripts/entrypoint.sh /app/bin/entrypoint.sh
 
 # Environment variables
 ENV WTTR_MYDIR="/app"
-ENV WTTR_GEOLITE="/app/GeoLite2-City.mmdb"
 ENV WTTR_LISTEN_HOST="0.0.0.0"
-ENV WTTR_LISTEN_PORT="8002"
+ENV WTTR_LISTEN_PORT="8080"
 
 USER wttr
 
-EXPOSE 8002
+EXPOSE 8080
 
+ENTRYPOINT ["/app/bin/entrypoint.sh"]
 CMD ["/app/bin/srv", "srv", "/app/config/config.yaml"]
