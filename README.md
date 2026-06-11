@@ -791,17 +791,35 @@ weather:
 
 Sign up and get a free key at [weatherapi.com](https://www.weatherapi.com/).
 
-#### WorldWeatherOnline-compatible (legacy)
+#### WorldWeatherOnline (WWO)
 
-For compatibility with the original wttr.in backend or a WWO-compatible proxy, use the `wwo` provider. A `baseUrl` with `{lat}`, `{lon}`, and `{lang}` placeholders is required.
+[WorldWeatherOnline](https://www.worldweatheronline.com/developer/) is the weather backend used by the original public wttr.in. It requires a paid API key (30-day free trial available).
 
 ```yaml
 weather:
-  provider: wwo   # can be omitted if only wwo block is present
+  provider: wwo
   wwo:
     baseUrl: "https://api.worldweatheronline.com/premium/v1/weather.ashx?key={key}&q={lat},{lon}&format=json&num_of_days=3&fx=yes&cc=yes&hourly=1&tp=3&mca=no&includelocation=yes&lang={lang}"
     key: "YOUR_WWO_API_KEY"
 ```
+
+The URL placeholders `{key}`, `{lat}`, `{lon}`, and `{lang}` are filled in automatically at runtime. The query parameters used:
+
+| Parameter | Value | Purpose |
+|---|---|---|
+| `key={key}` | your API key | injected from the `key:` field at startup |
+| `q={lat},{lon}` | coordinates | filled per request |
+| `format=json` | JSON | required for parsing |
+| `num_of_days=3` | 3 | 3-day forecast — matches what all renderers expect |
+| `fx=yes` | yes | include daily + hourly forecast |
+| `cc=yes` | yes | include current conditions |
+| `hourly=1` | 1 | enable hourly data |
+| `tp=3` | 3 | 3-hour intervals — produces the 8 slots/day (0 300 600 … 2100) the renderers need |
+| `mca=no` | no | omit monthly climate averages (reduces response size) |
+| `includelocation=yes` | yes | include the `nearest_area` block (area name, country, region); omitting this parameter causes WWO to silently drop that section |
+| `lang={lang}` | language code | filled per request |
+
+Sign up at [worldweatheronline.com/developer](https://www.worldweatheronline.com/developer/).
 
 **Provider comparison**
 
